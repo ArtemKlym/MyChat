@@ -17,6 +17,7 @@ compose_nav = "2.8.3"
 retrofit_version = '2.9.0'
 gson_version = '2.10'
 coil_version = "2.4.0"
+icons_version = "1.6.8"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -51,6 +52,8 @@ hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "dag
 hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hilt-navigation-compose" }
 #AsyncImage
 coil = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil_version"}
+#Icons
+icons = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "icons_version"}
 
 
 [plugins]

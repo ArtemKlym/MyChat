@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.navigation)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -75,12 +76,16 @@ dependencies {
     implementation(libs.firebase.auth)
 
     implementation(libs.coil)
+
     implementation(libs.retrofit.core)
     implementation(libs.retrofit.converter)
     implementation(libs.retrofit.gson)
+
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
+
     implementation(libs.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.navigation)
+
+    implementation(libs.icons)
 }
