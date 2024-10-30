@@ -1,4 +1,4 @@
-package com.artemklymenko.mychat.pages.sign_up
+package com.artemklymenko.mychat.presentation.pages.sign_up
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
@@ -19,6 +21,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -26,10 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,21 +42,30 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artemklymenko.mychat.R
-import com.artemklymenko.mychat.ui.theme.MyChatTheme
+import com.artemklymenko.mychat.presentation.ui.theme.MyChatTheme
 
 @Composable
 fun SignUpScreen(
     modifier: Modifier,
+    state: SignUpState,
+    onEvent: (SignUpEvent) -> Unit,
     onRegisterClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
         modifier = modifier
     ) {
-       SignUpScreenContent(
-           modifier = Modifier.padding(it),
-           onRegisterClick = onRegisterClick
-       )
+        SignUpScreenContent(
+            modifier = Modifier.padding(it),
+            state = state,
+            onEvent = onEvent,
+            onRegisterClick = onRegisterClick
+        )
+    }
+    LaunchedEffect(state.isSuccessfullyRegistered) {
+        if (state.isSuccessfullyRegistered) {
+            onRegisterClick()
+        }
     }
     BackHandler {
         onBackClick()
@@ -66,16 +75,15 @@ fun SignUpScreen(
 @Composable
 private fun SignUpScreenContent(
     modifier: Modifier,
+    state: SignUpState,
+    onEvent: (SignUpEvent) -> Unit,
     onRegisterClick: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 32.dp)
+            .verticalScroll(rememberScrollState())
     ) {
         Image(
             modifier = Modifier
@@ -94,9 +102,9 @@ private fun SignUpScreenContent(
                 .padding(top = 16.dp)
         )
         TextField(
-            value = email,
-            onValueChange = { text ->
-                email = text.trim()
+            value = state.emailInput,
+            onValueChange = { newEmail ->
+                onEvent(SignUpEvent.UpdateEmail(newEmail))
             },
             placeholder = {
                 Text(text = stringResource(R.string.email))
@@ -107,6 +115,10 @@ private fun SignUpScreenContent(
                     contentDescription = null
                 )
             },
+            isError = state.errorMessage != null,
+            supportingText = {
+                Text(text = state.errorMessage ?: "")
+            },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             colors = TextFieldDefaults.colors(
@@ -115,12 +127,12 @@ private fun SignUpScreenContent(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp)
+                .padding(top = 16.dp)
         )
         TextField(
-            value = username,
-            onValueChange = { text ->
-                username = text.trim()
+            value = state.usernameInput,
+            onValueChange = { newUsername ->
+                onEvent(SignUpEvent.UpdateUsername(newUsername))
             },
             placeholder = {
                 Text(text = stringResource(R.string.username))
@@ -131,6 +143,10 @@ private fun SignUpScreenContent(
                     contentDescription = null
                 )
             },
+            isError = state.errorMessage != null,
+            supportingText = {
+                Text(text = state.errorMessage ?: "")
+            },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             colors = TextFieldDefaults.colors(
@@ -139,12 +155,11 @@ private fun SignUpScreenContent(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp)
         )
         TextField(
-            value = password,
-            onValueChange = { text ->
-                password = text.trim()
+            value = state.passwordInput,
+            onValueChange = { newPassword ->
+                onEvent(SignUpEvent.UpdatePassword(newPassword))
             },
             placeholder = {
                 Text(text = stringResource(R.string.password))
@@ -157,13 +172,17 @@ private fun SignUpScreenContent(
             },
             trailingIcon = {
                 Icon(
-                    imageVector = if (passwordVisible)
+                    imageVector = if (state.isPasswordShown)
                         Icons.Filled.Visibility
                     else
                         Icons.Filled.VisibilityOff,
                     contentDescription = null,
-                    modifier = Modifier.clickable { passwordVisible = !passwordVisible }
+                    modifier = Modifier.clickable { onEvent(SignUpEvent.PasswordVisibility) }
                 )
+            },
+            isError = state.errorMessage != null,
+            supportingText = {
+                Text(text = state.errorMessage ?: "")
             },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -171,13 +190,55 @@ private fun SignUpScreenContent(
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent
             ),
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (state.isPasswordShown) VisualTransformation.None else PasswordVisualTransformation(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+        )
+        TextField(
+            value = state.passwordRepeatedInput,
+            onValueChange = { newPassword ->
+                onEvent(SignUpEvent.UpdateRepeatedPassword(newPassword))
+            },
+            placeholder = {
+                Text(text = stringResource(R.string.confirm_password))
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = null
+                )
+            },
+            trailingIcon = {
+                Icon(
+                    imageVector = if (state.isPasswordShown)
+                        Icons.Filled.Visibility
+                    else
+                        Icons.Filled.VisibilityOff,
+                    contentDescription = null,
+                    modifier = Modifier.clickable { onEvent(SignUpEvent.PasswordRepeatedVisibility) }
+                )
+            },
+            isError = state.errorMessage != null,
+            supportingText = {
+                Text(text = state.errorMessage ?: "")
+            },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent
+            ),
+            visualTransformation = if (state.isPasswordRepeatedShown) VisualTransformation.None else PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(56.dp))
         Button(
-            onClick = { onRegisterClick() },
+            onClick = {
+                onEvent(SignUpEvent.SignUp)
+            },
+            enabled = state.isInputValid,
             modifier = Modifier
                 .fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
@@ -185,7 +246,14 @@ private fun SignUpScreenContent(
                 contentColor = Color.White
             )
         ) {
-            Text(text = stringResource(R.string.sign_up))
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+            } else {
+                Text(text = stringResource(R.string.sign_up))
+            }
         }
     }
 }
@@ -196,6 +264,8 @@ private fun SignUpScreenPreviewDark() {
     MyChatTheme(darkTheme = true) {
         SignUpScreen(
             modifier = Modifier,
+            state = SignUpState(),
+            onEvent = {},
             onRegisterClick = {}
         ) {}
     }
@@ -207,6 +277,8 @@ private fun SignUpScreenPreviewLight() {
     MyChatTheme(darkTheme = false) {
         SignUpScreen(
             modifier = Modifier,
+            state = SignUpState(),
+            onEvent = {},
             onRegisterClick = {}
         ) {}
     }

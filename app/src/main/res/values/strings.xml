@@ -7,4 +7,5 @@
     <string name="new_to_mychat">"New to MyChat? "</string>
     <string name="login">Login</string>
     <string name="forgot_password">Forgot password?</string>
+    <string name="confirm_password">Confirm Password</string>
 </resources>
