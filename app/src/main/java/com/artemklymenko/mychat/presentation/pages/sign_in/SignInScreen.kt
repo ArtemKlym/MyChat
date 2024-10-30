@@ -1,4 +1,4 @@
-package com.artemklymenko.mychat.pages.sign_in
+package com.artemklymenko.mychat.presentation.pages.sign_in
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -24,10 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,11 +38,13 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artemklymenko.mychat.R
-import com.artemklymenko.mychat.ui.theme.MyChatTheme
+import com.artemklymenko.mychat.presentation.ui.theme.MyChatTheme
 
 @Composable
 fun SignInScreen(
     modifier: Modifier,
+    state: SignInState,
+    onEvent: (SignInEvent) -> Unit,
     onForgotPasswordClick: () -> Unit,
     onLoginClick: () -> Unit,
     onRegisterClick: () -> Unit
@@ -53,24 +53,28 @@ fun SignInScreen(
         modifier = modifier, content = {
             LoginScreenContent(
                 Modifier.padding(it),
+                state,
+                onEvent,
                 onForgotPasswordClick,
-                onLoginClick,
                 onRegisterClick
             )
         }
     )
+    LaunchedEffect(state.isSuccessfullyLoggedIn) {
+        if (state.isSuccessfullyLoggedIn) {
+            onLoginClick()
+        }
+    }
 }
 
 @Composable
 private fun LoginScreenContent(
     modifier: Modifier,
+    state: SignInState,
+    onEvent: (SignInEvent) -> Unit,
     onForgotPasswordClick: () -> Unit,
-    onLoginClick: () -> Unit,
     onRegisterClick: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -93,9 +97,9 @@ private fun LoginScreenContent(
                 .padding(top = 24.dp)
         )
         TextField(
-            value = email,
-            onValueChange = { text ->
-                email = text.trim()
+            value = state.emailInput,
+            onValueChange = { newEmail ->
+                onEvent(SignInEvent.UpdateEmail(newEmail))
             },
             placeholder = {
                 Text(text = stringResource(R.string.email))
@@ -105,6 +109,10 @@ private fun LoginScreenContent(
                     imageVector = Icons.Default.Email,
                     contentDescription = null
                 )
+            },
+            isError = state.errorMessage != null,
+            supportingText = {
+                Text(text = state.errorMessage ?: "")
             },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -117,9 +125,9 @@ private fun LoginScreenContent(
                 .padding(vertical = 16.dp)
         )
         TextField(
-            value = password,
-            onValueChange = { text ->
-                password = text.trim()
+            value = state.passwordInput,
+            onValueChange = { newPassword ->
+                onEvent(SignInEvent.UpdatePassword(newPassword))
             },
             placeholder = {
                 Text(text = stringResource(R.string.password))
@@ -132,13 +140,17 @@ private fun LoginScreenContent(
             },
             trailingIcon = {
                 Icon(
-                    imageVector = if (passwordVisible)
+                    imageVector = if (state.isPasswordShown)
                         Icons.Filled.Visibility
                     else
                         Icons.Filled.VisibilityOff,
                     contentDescription = null,
-                    modifier = Modifier.clickable { passwordVisible = !passwordVisible }
+                    modifier = Modifier.clickable { onEvent(SignInEvent.PasswordVisibility) }
                 )
+            },
+            isError = state.errorMessage != null,
+            supportingText = {
+                Text(text = state.errorMessage ?: "")
             },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -146,7 +158,7 @@ private fun LoginScreenContent(
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent
             ),
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (state.isPasswordShown) VisualTransformation.None else PasswordVisualTransformation(),
             modifier = Modifier
                 .fillMaxWidth()
         )
@@ -163,7 +175,10 @@ private fun LoginScreenContent(
             )
         }
         Button(
-            onClick = { onLoginClick() },
+            onClick = {
+                onEvent(SignInEvent.SignIn)
+            },
+            enabled = state.isInputValid,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp),
@@ -172,7 +187,14 @@ private fun LoginScreenContent(
                 contentColor = Color.White
             )
         ) {
-            Text(text = stringResource(R.string.login))
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+            } else {
+                Text(text = stringResource(R.string.login))
+            }
         }
         Row(
             modifier = Modifier
@@ -203,8 +225,12 @@ private fun SignInScreenPreviewLight() {
     MyChatTheme {
         SignInScreen(
             modifier = Modifier,
-            onForgotPasswordClick = {},
-            onLoginClick = {}) {}
+            state = SignInState(),
+            onEvent = { SignInEvent.SignIn },
+            onForgotPasswordClick = { /*TODO*/ },
+            onLoginClick = { /*TODO*/ }) {
+
+        }
     }
 }
 
@@ -214,7 +240,11 @@ private fun SignInScreenPreviewDark() {
     MyChatTheme(darkTheme = true) {
         SignInScreen(
             modifier = Modifier,
-            onForgotPasswordClick = {},
-            onLoginClick = {}) {}
+            state = SignInState(),
+            onEvent = {},
+            onForgotPasswordClick = { /*TODO*/ },
+            onLoginClick = { /*TODO*/ }) {
+
+        }
     }
 }
