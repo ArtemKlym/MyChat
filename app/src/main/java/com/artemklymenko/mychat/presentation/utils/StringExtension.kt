@@ -1,4 +1,4 @@
-package com.artemklymenko.mychat.utils
+package com.artemklymenko.mychat.presentation.utils
 
 import java.util.regex.Pattern
 

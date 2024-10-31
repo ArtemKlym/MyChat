@@ -1,14 +1,18 @@
-package com.artemklymenko.mychat.navigation
+package com.artemklymenko.mychat.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.artemklymenko.mychat.pages.sign_in.SignInScreen
-import com.artemklymenko.mychat.pages.sign_up.SignUpScreen
-import com.artemklymenko.mychat.pages.splash.SplashScreen
+import com.artemklymenko.mychat.presentation.pages.main.MainScreen
+import com.artemklymenko.mychat.presentation.pages.sign_in.SignInScreen
+import com.artemklymenko.mychat.presentation.pages.sign_in.SignInViewModel
+import com.artemklymenko.mychat.presentation.pages.sign_up.SignUpScreen
+import com.artemklymenko.mychat.presentation.pages.sign_up.SignUpViewModel
+import com.artemklymenko.mychat.presentation.pages.splash.SplashScreen
 
 @Composable
 fun RootAppNavigation(
@@ -33,23 +37,43 @@ fun RootAppNavigation(
         }
 
         composable(Routes.SignIn.route){
+            val viewModel = hiltViewModel<SignInViewModel>()
+            val state = viewModel.loginState
             SignInScreen(
                 modifier = modifier,
+                state = state,
+                onEvent = viewModel::onEvent,
                 onForgotPasswordClick = {},
-                onLoginClick = {}) {
+                onLoginClick = {
+                    navController.navigate(Routes.MainPaige.route){
+                        popUpTo(0)
+                    }
+                }
+            ) {
                 navController.navigate(Routes.SignUp.route)
             }
         }
 
         composable(Routes.SignUp.route){
+            val viewModel = hiltViewModel<SignUpViewModel>()
+            val state = viewModel.registerState
             SignUpScreen(
                 modifier = modifier,
-                onRegisterClick = {}
+                state = state,
+                onEvent = viewModel::onEvent,
+                onRegisterClick = {
+                    navController.navigate(Routes.SignIn.route){
+                        popUpTo(0)
+                    }
+                }
             ) {
                 navController.navigate(Routes.SignIn.route){
                     popUpTo(0)
                 }
             }
+        }
+        composable(Routes.MainPaige.route){
+            MainScreen(modifier = modifier)
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.artemklymenko.mychat.navigation
+package com.artemklymenko.mychat.presentation.navigation
 
 sealed class Routes(val route: String) {
     /**
@@ -10,4 +10,8 @@ sealed class Routes(val route: String) {
      */
     data object SignIn: Routes("sign_in")
     data object SignUp: Routes("sign_up")
+    /**
+     * Main screen
+     */
+    data object MainPaige: Routes("main")
 }

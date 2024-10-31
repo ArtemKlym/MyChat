@@ -1,7 +1,7 @@
 package com.artemklymenko.mychat.domain.use_case
 
 import com.artemklymenko.mychat.domain.model.RegisterInputValidationType
-import com.artemklymenko.mychat.utils.StringExtension
+import com.artemklymenko.mychat.presentation.utils.StringExtension
 
 class ValidateRegisterInputUseCase {
 

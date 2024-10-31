@@ -1,4 +1,4 @@
-package com.artemklymenko.mychat.pages.splash
+package com.artemklymenko.mychat.presentation.pages.splash
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -18,7 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artemklymenko.mychat.R
-import com.artemklymenko.mychat.ui.theme.MyChatTheme
+import com.artemklymenko.mychat.presentation.ui.theme.MyChatTheme
 
 @Composable
 fun SplashScreen(
