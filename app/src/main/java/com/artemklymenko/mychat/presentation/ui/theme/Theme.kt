@@ -1,4 +1,4 @@
-package com.artemklymenko.mychat.ui.theme
+package com.artemklymenko.mychat.presentation.ui.theme
 
 import android.app.Activity
 import android.os.Build

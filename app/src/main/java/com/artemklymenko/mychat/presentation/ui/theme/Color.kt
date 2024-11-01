@@ -1,4 +1,4 @@
-package com.artemklymenko.mychat.ui.theme
+package com.artemklymenko.mychat.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
