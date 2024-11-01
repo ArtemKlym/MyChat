@@ -13,6 +13,7 @@ import com.artemklymenko.mychat.presentation.pages.sign_in.SignInViewModel
 import com.artemklymenko.mychat.presentation.pages.sign_up.SignUpScreen
 import com.artemklymenko.mychat.presentation.pages.sign_up.SignUpViewModel
 import com.artemklymenko.mychat.presentation.pages.splash.SplashScreen
+import com.artemklymenko.mychat.presentation.pages.splash.SplashViewModel
 
 @Composable
 fun RootAppNavigation(
@@ -26,10 +27,19 @@ fun RootAppNavigation(
         startDestination = startDestination
     ) {
         composable(Routes.Splash.route){
+            val viewModel = hiltViewModel<SplashViewModel>()
+            val state = viewModel.splashState
             SplashScreen(
                 modifier = modifier,
+                state = state,
+                onEvent = viewModel::onEvent,
                 onNavigateToSignIn = {
                     navController.navigate(Routes.SignIn.route){
+                        popUpTo(0)
+                    }
+                },
+                onNavigateToMainScreen = {
+                    navController.navigate(Routes.MainPaige.route){
                         popUpTo(0)
                     }
                 }
