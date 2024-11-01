@@ -19,12 +19,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.artemklymenko.mychat.R
 import com.artemklymenko.mychat.presentation.ui.theme.MyChatTheme
+import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(
     modifier: Modifier,
-    onNavigateToSignIn: () -> Unit
+    state: SplashState,
+    onEvent: (SplashEvent) -> Unit,
+    onNavigateToSignIn: () -> Unit,
+    onNavigateToMainScreen: () -> Unit
 ) {
+    LaunchedEffect(state.hasUser) {
+        onEvent(SplashEvent.CheckIsUserAuth)
+        delay(2000L)
+        if (state.hasUser) {
+            onNavigateToMainScreen()
+        } else {
+            onNavigateToSignIn()
+        }
+    }
     Scaffold(
         modifier = modifier
     ) {
@@ -42,25 +55,30 @@ fun SplashScreen(
             )
             Spacer(modifier = modifier.height(16.dp))
             CircularProgressIndicator()
-            LaunchedEffect(key1 = Unit) {
-                onNavigateToSignIn()
-            }
         }
     }
 }
 
 @Preview
 @Composable
-private fun SplashScreenPreviewLight(){
+private fun SplashScreenPreviewLight() {
     MyChatTheme {
-        SplashScreen(modifier = Modifier, onNavigateToSignIn = {})
+        SplashScreen(
+            modifier = Modifier,
+            state = SplashState(),
+            onEvent = {},
+            onNavigateToSignIn = {}) {}
     }
 }
 
 @Preview
 @Composable
-private fun SplashScreenPreviewDark(){
+private fun SplashScreenPreviewDark() {
     MyChatTheme(darkTheme = true) {
-        SplashScreen(modifier = Modifier, onNavigateToSignIn = {})
+        SplashScreen(
+            modifier = Modifier,
+            state = SplashState(),
+            onEvent = {},
+            onNavigateToSignIn = {}) {}
     }
 }
