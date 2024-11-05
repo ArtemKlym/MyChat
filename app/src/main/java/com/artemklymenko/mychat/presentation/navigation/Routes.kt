@@ -13,5 +13,12 @@ sealed class Routes(val route: String) {
     /**
      * Main screen
      */
-    data object MainPaige: Routes("main")
+    data object MainPage: Routes("main")
+    data object MyProfile: Routes("my_profile")
+    data object NewGroup: Routes("new_group")
+    data object Settings: Routes("settings")
+    data object Calls: Routes("calls")
+    data object Contacts: Routes("contacts")
+    data object Chats: Routes("chats")
+    data object SavedMessages: Routes("saved_messages")
 }
