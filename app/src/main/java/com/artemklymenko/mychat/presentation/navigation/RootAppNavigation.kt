@@ -7,14 +7,15 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.artemklymenko.mychat.presentation.pages.main.CallsScreen
-import com.artemklymenko.mychat.presentation.pages.main.ContactsScreen
+import com.artemklymenko.mychat.presentation.pages.main.navigation_drawer_content.calls.CallsScreen
+import com.artemklymenko.mychat.presentation.pages.main.navigation_drawer_content.contacts.ContactsScreen
 import com.artemklymenko.mychat.presentation.pages.main.MainScreen
 import com.artemklymenko.mychat.presentation.pages.main.MainViewModel
-import com.artemklymenko.mychat.presentation.pages.main.MyProfileScreen
-import com.artemklymenko.mychat.presentation.pages.main.NewGroupScreen
-import com.artemklymenko.mychat.presentation.pages.main.SavedMessagesScreen
-import com.artemklymenko.mychat.presentation.pages.main.SettingsScreen
+import com.artemklymenko.mychat.presentation.pages.main.chat.ChatScreen
+import com.artemklymenko.mychat.presentation.pages.main.navigation_drawer_content.profile.MyProfileScreen
+import com.artemklymenko.mychat.presentation.pages.main.navigation_drawer_content.new_group.NewGroupScreen
+import com.artemklymenko.mychat.presentation.pages.main.navigation_drawer_content.saved_messages.SavedMessagesScreen
+import com.artemklymenko.mychat.presentation.pages.main.navigation_drawer_content.settings.SettingsScreen
 import com.artemklymenko.mychat.presentation.pages.sign_in.SignInScreen
 import com.artemklymenko.mychat.presentation.pages.sign_in.SignInViewModel
 import com.artemklymenko.mychat.presentation.pages.sign_up.SignUpScreen
@@ -131,8 +132,20 @@ fun RootAppNavigation(
                         popUpTo(Routes.MainPage.route) { inclusive = false }
                         restoreState = true
                     }
+                },
+                onAddChatClick = {
+
+                },
+                onChatClick = { id ->
+                    navController.navigate(Routes.Chat.getChatId(id))
                 }
             )
+        }
+        composable(Routes.Chat.route){ backStackEntry ->
+            val chatId = backStackEntry.arguments?.getString("chat_id")?.toInt()
+            chatId?.let {
+                ChatScreen(chatId = chatId, modifier = modifier)
+            }
         }
         composable(Routes.MyProfile.route) {
             MyProfileScreen()
